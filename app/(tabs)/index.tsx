@@ -59,7 +59,7 @@ export default function Index() {
         {item.title}
       </Text>
 
-      <Text style={styles.price}>{item.price} ₾</Text>
+      <Text style={styles.price}>{item.price} $</Text>
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.cartButton}>

@@ -14,40 +14,50 @@ import {
 } from "react-native";
 import * as yup from "yup";
 
-const loginSchema = yup.object().shape({
+const schema = yup.object().shape({
   email: yup.string().email("არასწორი მეილი").required("მეილი აუცილებელია"),
-  password: yup.string().required("პაროლი აუცილებელია"),
+  password: yup
+    .string()
+    .min(6, "მინიმუმ 6 სიმბოლო")
+    .required("პაროლი აუცილებელია"),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref("password")], "პაროლები არ ემთხვევა")
+    .required("პაროლის დადასტურება აუცილებელია"),
 });
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
   const router = useRouter();
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: yupResolver(loginSchema),
+    resolver: yupResolver(schema),
   });
 
-  const onLogin = (data: any) => {
-    console.log("Login data:", data);
+  const onSubmit = (data: any) => {
+    console.log("მონაცემები:", data);
     router.replace("/(tabs)");
   };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: "#fff" }}
     >
-      <ScrollView contentContainerStyle={styles.container} bounces={false}>
-        {}
+      <ScrollView
+        contentContainerStyle={styles.container}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ლოგოს კონტეინერი */}
         <View style={styles.logoContainer}>
           <View style={styles.blueCircle}>
             <View style={styles.userHead} />
             <View style={styles.userBody} />
           </View>
 
-          {}
           <View style={styles.plusBadge}>
             <Text style={styles.plusText}>+</Text>
           </View>
@@ -89,12 +99,33 @@ export default function LoginScreen() {
           <Text style={styles.errorText}>{errors.password.message}</Text>
         )}
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit(onLogin)}>
-          <Text style={styles.buttonText}>Sign In</Text>
+        <Controller
+          control={control}
+          name="confirmPassword"
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              style={styles.input}
+              placeholder="password again"
+              placeholderTextColor="#A0A0A0"
+              secureTextEntry
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+        />
+        {errors.confirmPassword && (
+          <Text style={styles.errorText}>{errors.confirmPassword.message}</Text>
+        )}
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleSubmit(onSubmit)}
+        >
+          <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
-          <Text style={styles.linkText}>don't have an account? register</Text>
+        <TouchableOpacity onPress={() => router.push("/(auth)")}>
+          <Text style={styles.linkText}>sign in</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -106,11 +137,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     backgroundColor: "#fff",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "center", // ყველაფერს აცენტრებს ვერტიკალურად
     padding: 25,
   },
   logoContainer: {
-    marginBottom: 60,
+    marginBottom: 50,
     alignItems: "center",
     position: "relative",
   },
@@ -140,9 +171,9 @@ const styles = StyleSheet.create({
   plusBadge: {
     position: "absolute",
     bottom: -1,
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: "#4a90e2",
     borderWidth: 3,
     borderColor: "white",
@@ -172,7 +203,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 25,
+    marginTop: 20,
   },
   buttonText: { color: "white", fontWeight: "bold", fontSize: 18 },
   linkText: { color: "#4a90e2", marginTop: 20, fontSize: 16 },

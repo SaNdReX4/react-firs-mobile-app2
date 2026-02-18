@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,22 +11,18 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type ProductsType = {
+// პროდუქტის ტიპის განსაზღვრა TypeScript-ისთვის
+type Product = {
   id: number;
   title: string;
   price: number;
-  description: string;
-  category: string;
   image: string;
-  rating: {
-    rate: number;
-    count: number;
-  };
 };
 
 export default function Index() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     fetch("https://fakestoreapi.com/products")
@@ -41,7 +37,7 @@ export default function Index() {
       });
   }, []);
 
-  const renderItem = ({ item }: { item: any }) => (
+  const renderItem = ({ item }: { item: Product }) => (
     <View style={styles.card}>
       <View style={styles.imageContainer}>
         <Image
@@ -51,10 +47,10 @@ export default function Index() {
         />
         <View style={styles.topButtons}>
           <TouchableOpacity style={styles.iconCircle}>
-            <Text>⇄</Text>
+            <Text style={{ color: "#7B61FF" }}>⇄</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconCircle}>
-            <Text>♡</Text>
+            <Text style={{ color: "red" }}>♡</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -70,8 +66,16 @@ export default function Index() {
           <Text style={{ fontSize: 18 }}>🛒</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.buyButton}>
-          <Text style={styles.buyButtonText}>ყიდვა</Text>
+        <TouchableOpacity
+          style={styles.buyButton}
+          onPress={() => {
+            router.push({
+              pathname: "/products/[id]",
+              params: { id: item.id },
+            });
+          }}
+        >
+          <Text style={styles.buyButtonText}>ნახვა</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -86,20 +90,13 @@ export default function Index() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Stack.Screen
-        options={{
-          title: "მაღაზია",
-          headerShown: true,
-          headerTitleAlign: "center",
-        }}
-      />
+    <SafeAreaView style={styles.container} edges={["left", "right"]}>
       <FlatList
         data={products}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
-        numColumns={1}
         contentContainerStyle={styles.listPadding}
+        showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
   );
@@ -109,8 +106,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-    alignItems: "center",
-    justifyContent: "center",
   },
   center: {
     flex: 1,
@@ -178,7 +173,7 @@ const styles = StyleSheet.create({
   cartButton: {
     backgroundColor: "#f8f8f8",
     padding: 12,
-    borderRadius: 50,
+    borderRadius: 25,
     width: 50,
     height: 50,
     justifyContent: "center",
@@ -187,7 +182,6 @@ const styles = StyleSheet.create({
   buyButton: {
     backgroundColor: "#7B61FF",
     paddingVertical: 12,
-    paddingHorizontal: 40,
     borderRadius: 30,
     flex: 1,
     marginLeft: 15,
@@ -195,7 +189,7 @@ const styles = StyleSheet.create({
   },
   buyButtonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
   },
 });
